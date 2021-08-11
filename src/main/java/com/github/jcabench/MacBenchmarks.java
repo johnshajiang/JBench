@@ -7,7 +7,6 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.infra.Blackhole;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -18,7 +17,7 @@ import java.security.Security;
  */
 public class MacBenchmarks {
 
-    private final static byte[] MESSAGE = BenchmarkUtils.MBYTE_10;
+    private final static byte[] MESSAGE = BenchmarkUtils.DATA_1MB;
 
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -32,7 +31,7 @@ public class MacBenchmarks {
                 "HmacSHA3-256", "HmacSHA3-384", "HmacSHA3-512"})
         String algorithm;
 
-        @Param({"BC"})
+        @Param({"SunJCE", "BC"})
         String provider;
 
         Mac self;
@@ -46,8 +45,8 @@ public class MacBenchmarks {
     }
 
     @Benchmark
-    public void mac(MAC mac, Blackhole blackhole) {
-        blackhole.consume(mac.self.doFinal(MESSAGE));
+    public byte[] mac(MAC mac) {
+        return mac.self.doFinal(MESSAGE);
     }
 
     public static void main(String[] args) throws Exception {

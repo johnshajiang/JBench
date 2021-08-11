@@ -1,29 +1,52 @@
 package com.github.jcabench;
 
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.IvParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.HexFormat;
 
 /**
  * The utilities for the JMH-based benchmarks.
  */
 public class BenchmarkUtils {
 
-    public static final byte[] BYTE_256 = bytes(256);
-    public static final byte[] KBYTE_256 = kbytes(256);
-    public static final byte[] MBYTE_10 = mbytes(10);
+    public static final byte[] DATA_256B = bytes(256);
+    public static final byte[] DATA_256KB = kbytes(256);
+    public static final byte[] DATA_1MB = mbytes(1);
 
     public static final byte[] KEY_16 = bytes(16);
     public static final byte[] KEY_32 = bytes(32);
 
-    private static final HexFormat HEX = HexFormat.of();
+    public static final byte[] IV_16 = KEY_16;
+
+    public static final SecretKey AES_KEY_16 = new SecretKeySpec(KEY_16, "AES");
+    public static final SecretKey AES_KEY_32 = new SecretKeySpec(KEY_32, "AES");
+    public static final IvParameterSpec IV_PARAM_16 = new IvParameterSpec(IV_16);
+    public static final GCMParameterSpec GCM_PARAM_16
+            = new GCMParameterSpec(128, IV_16);
+
+    private static final SecureRandom RANDOM = new SecureRandom();
 
     public static String toHex(byte[] bytes) {
-        return HEX.formatHex(bytes);
+        StringBuilder result = new StringBuilder();
+        for (byte b : bytes) {
+            result.append(Character.forDigit(b >> 4 & 0xF, 16));
+            result.append(Character.forDigit(b & 0xF, 16));
+        }
+        return result.toString();
     }
 
     public static byte[] toBytes(String hex) {
-        return HEX.parseHex(hex);
+        byte[] bytes = new byte[hex.length() / 2];
+        for (int i = 0; i < bytes.length; i++) {
+            bytes[i] = (byte) Character.digit(hex.charAt(2 * i), 16);
+            bytes[i] <<= 4;
+            bytes[i] += Character.digit(hex.charAt(2 * i + 1), 16);
+        }
+        return bytes;
     }
 
     public static byte[] bytes(int size) {
@@ -49,5 +72,11 @@ public class BenchmarkUtils {
     public static String formattedTime(String pattern) {
         return LocalDateTime.now().format(
                 DateTimeFormatter.ofPattern(pattern));
+    }
+
+    public static byte[] randomBytes(int size) {
+        byte[] bytes = new byte[size];
+        RANDOM.nextBytes(bytes);
+        return bytes;
     }
 }

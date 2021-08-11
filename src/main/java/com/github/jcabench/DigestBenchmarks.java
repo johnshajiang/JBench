@@ -7,7 +7,6 @@ import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
-import org.openjdk.jmh.infra.Blackhole;
 
 import java.security.MessageDigest;
 import java.security.Security;
@@ -17,7 +16,7 @@ import java.security.Security;
  */
 public class DigestBenchmarks {
 
-    private final static byte[] MESSAGE = BenchmarkUtils.MBYTE_10;
+    private final static byte[] MESSAGE = BenchmarkUtils.DATA_1MB;
 
     static {
         Security.addProvider(new BouncyCastleProvider());
@@ -26,12 +25,12 @@ public class DigestBenchmarks {
     @State(Scope.Benchmark)
     public static class MD {
 
-        @Param({"SHA-1", "SHA-224", "SHA-256", "SHA-384", "SHA-512/224", "SHA-512/256",
-                "SHA3-224", "SHA3-256", "SHA3-384", "SHA3-512"})
-        String algorithm;
-
         @Param({"SUN", "BC"})
         String provider;
+
+        @Param({"SHA-1", "SHA-224", "SHA-256", "SHA-384", "SHA-512/224",
+                "SHA-512/256", "SHA3-224", "SHA3-256", "SHA3-384", "SHA3-512"})
+        String algorithm;
 
         MessageDigest self;
 
@@ -42,8 +41,8 @@ public class DigestBenchmarks {
     }
 
     @Benchmark
-    public void digest(MD md, Blackhole blackhole) {
-        blackhole.consume(md.self.digest(MESSAGE));
+    public byte[] digest(MD md) {
+        return md.self.digest(MESSAGE);
     }
 
     public static void main(String[] args) throws Exception {

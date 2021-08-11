@@ -9,6 +9,9 @@ import org.openjdk.jmh.runner.options.ChainedOptionsBuilder;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
@@ -22,6 +25,10 @@ public class BenchmarkExecutor {
     private static final String JMH_EXT = ".jmh";
 
     private final ChainedOptionsBuilder optionsBuilder;
+
+    static {
+        setJavaClasspath();
+    }
 
     public BenchmarkExecutor(OptionsBuilder optionsBuilder) {
         this.optionsBuilder = optionsBuilder;
@@ -53,14 +60,28 @@ public class BenchmarkExecutor {
 
     public Collection<RunResult> execute(Class<?> benchmarkClass)
             throws RunnerException {
-        String className = benchmarkClass.getName();
-        String filename = className + "-" + formattedTime() + JMH_EXT;
-        return execute(className, filename);
+        return execute(benchmarkClass.getSimpleName(), filename(benchmarkClass));
     }
 
     public static void main(String[] args) throws RunnerException {
-        String filename = "Benchmarks-" + formattedTime() + JMH_EXT;
         String regrex = args != null && args.length > 0 ? args[0] : "Benchmarks";
-        new BenchmarkExecutor().execute(regrex, filename);
+        new BenchmarkExecutor().execute(regrex, filename(BenchmarkExecutor.class));
+    }
+
+    private static String filename(Class<?> clazz) {
+        return clazz.getName() + "-" + formattedTime() + JMH_EXT;
+    }
+
+    // A workaround for executing JMH via Maven.
+    // The command looks like the below:
+    // mvn compile exec:java -Dexec.mainClass=com.github.jcabench.BenchmarkExecutor
+    private static void setJavaClasspath() {
+        URLClassLoader classLoader
+                = (URLClassLoader) BenchmarkExecutor.class.getClassLoader();
+        StringBuilder classpath = new StringBuilder();
+        for(URL url : classLoader.getURLs()) {
+            classpath.append(url.getPath()).append(File.pathSeparator);
+        }
+        System.setProperty("java.class.path", classpath.toString());
     }
 }
