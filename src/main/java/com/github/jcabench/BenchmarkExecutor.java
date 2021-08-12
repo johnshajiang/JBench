@@ -74,7 +74,7 @@ public class BenchmarkExecutor {
 
     // A workaround for executing JMH via Maven.
     // The command looks like the below:
-    // mvn compile exec:java -Dexec.mainClass=com.github.jcabench.BenchmarkExecutor
+    // mvn exec:java -Dexec.mainClass=com.github.jcabench.BenchmarkExecutor -Dexec.args=<XXXBenchmarks>
     private static void setJavaClasspath() {
         URLClassLoader classLoader
                 = (URLClassLoader) BenchmarkExecutor.class.getClassLoader();

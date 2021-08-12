@@ -102,7 +102,7 @@ public class AesBenchmarks {
 
     @Benchmark
     public byte[] encrypt(AesEnc aes) throws Exception {
-        // GCM requires the IV or Key must NOT be reused.
+        // GCM requires either IV or Key must NOT be reused.
         if (aes.transformation.contains("GCM")) {
             aes.cipher.init(Cipher.ENCRYPT_MODE, BenchmarkUtils.AES_KEY_16,
                     new GCMParameterSpec(128, BenchmarkUtils.randomBytes(16)));
