@@ -27,7 +27,7 @@ public class AesBenchmarks {
     @State(Scope.Benchmark)
     public abstract static class Aes {
 
-        @Param({"SunJCE", "BC"})
+        @Param({"JDK", "BC"})
         String provider;
 
         @Param({"AES/CBC/NoPadding",
@@ -46,9 +46,9 @@ public class AesBenchmarks {
         }
 
         Cipher cipher(int opmode) throws Exception {
-            Cipher cipher = Cipher.getInstance(transformation, provider);
+            Cipher cipher = Cipher.getInstance(transformation, provider());
 
-            AlgorithmParameterSpec paramSpec = paramSpec(transformation);
+            AlgorithmParameterSpec paramSpec = paramSpec();
             if (paramSpec == null) {
                 cipher.init(opmode, BenchmarkUtils.AES_KEY_16);
             } else {
@@ -60,7 +60,11 @@ public class AesBenchmarks {
 
         abstract int opmode();
 
-        private AlgorithmParameterSpec paramSpec(String transformation) {
+        private String provider() {
+            return "JDK".equalsIgnoreCase(provider) ? "SunJCE" : provider;
+        }
+
+        private AlgorithmParameterSpec paramSpec() {
             if (transformation.contains("CBC") || transformation.contains("CTR")) {
                 return BenchmarkUtils.IV_PARAM_16;
             } else if (transformation.contains("ECB")) {
@@ -75,7 +79,6 @@ public class AesBenchmarks {
         }
     }
 
-    @State(Scope.Benchmark)
     public static class AesEnc extends Aes {
 
         int opmode() {
@@ -83,7 +86,6 @@ public class AesBenchmarks {
         }
     }
 
-    @State(Scope.Benchmark)
     public static class AesDec extends Aes {
 
         byte[] ciphertext;

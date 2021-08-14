@@ -25,7 +25,7 @@ public class DigestBenchmarks {
     @State(Scope.Benchmark)
     public static class MD {
 
-        @Param({"SUN", "BC"})
+        @Param({"JDK", "BC"})
         String provider;
 
         @Param({"SHA-1", "SHA-224", "SHA-256", "SHA-384", "SHA-512/224",
@@ -36,7 +36,11 @@ public class DigestBenchmarks {
 
         @Setup(Level.Trial)
         public void setup() throws Exception {
-            self = MessageDigest.getInstance(algorithm, provider);
+            self = MessageDigest.getInstance(algorithm, provider());
+        }
+
+        private String provider() {
+            return "JDK".equalsIgnoreCase(provider) ? "SUN" : provider;
         }
     }
 

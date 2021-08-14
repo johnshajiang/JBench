@@ -64,8 +64,16 @@ public class BenchmarkExecutor {
     }
 
     public static void main(String[] args) throws RunnerException {
-        String regrex = args != null && args.length > 0 ? args[0] : "Benchmarks";
-        new BenchmarkExecutor().execute(regrex, filename(BenchmarkExecutor.class));
+        BenchmarkExecutor executor = new BenchmarkExecutor();
+        if (args != null && args.length > 0) {
+            executor.execute(args[0], filename(BenchmarkExecutor.class));
+        } else {
+            executor.execute(AesBenchmarks.class);
+            executor.execute(ChaCha20Benchmarks.class);
+            executor.execute(DigestBenchmarks.class);
+            executor.execute(KeyPairGenBenchmarks.class);
+            executor.execute(MacBenchmarks.class);
+        }
     }
 
     private static String filename(Class<?> clazz) {

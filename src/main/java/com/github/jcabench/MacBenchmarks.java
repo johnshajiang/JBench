@@ -26,21 +26,25 @@ public class MacBenchmarks {
     @State(Scope.Benchmark)
     public static class MAC {
 
+        @Param({"JDK", "BC"})
+        String provider;
+
         @Param({"HmacSHA1", "HmacSHA224", "HmacSHA256", "HmacSHA384",
                 "HmacSHA512/224", "HmacSHA512/256", "HmacSHA3-224",
                 "HmacSHA3-256", "HmacSHA3-384", "HmacSHA3-512"})
         String algorithm;
 
-        @Param({"SunJCE", "BC"})
-        String provider;
-
         Mac self;
 
         @Setup(Level.Trial)
         public void setup() throws Exception {
-            self = Mac.getInstance(algorithm, provider);
+            self = Mac.getInstance(algorithm, provider());
             SecretKeySpec key = new SecretKeySpec(BenchmarkUtils.KEY_16, "AES");
             self.init(key);
+        }
+
+        private String provider() {
+            return "JDK".equalsIgnoreCase(provider) ? "SunJCE" : provider;
         }
     }
 

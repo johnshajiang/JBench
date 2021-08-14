@@ -29,7 +29,7 @@ public class ChaCha20Benchmarks {
     @State(Scope.Benchmark)
     public abstract static class ChaCha20 {
 
-        @Param({"SunJCE", "BC"})
+        @Param({"JDK", "BC"})
         String provider;
 
         @Param({"ChaCha20", "ChaCha20-Poly1305"})
@@ -49,14 +49,18 @@ public class ChaCha20Benchmarks {
                 iv = BenchmarkUtils.randomBytes(12);
             }
 
-            Cipher cipher = Cipher.getInstance(algorithm, provider);
-            cipher.init(opmode, BenchmarkUtils.AES_KEY_32, paramSpec(iv));
+            Cipher cipher = Cipher.getInstance(algorithm, provider());
+            cipher.init(opmode, BenchmarkUtils.AES_KEY_32, paramSpec());
 
             return cipher;
         }
 
-        private AlgorithmParameterSpec paramSpec(byte[] iv) {
-            if ("SunJCE".equals(provider)) {
+        private String provider() {
+            return "JDK".equalsIgnoreCase(provider) ? "SunJCE" : provider;
+        }
+
+        private AlgorithmParameterSpec paramSpec() {
+            if ("JDK".equals(provider)) {
                 return "ChaCha20-Poly1305".equals(algorithm)
                         ? new IvParameterSpec(iv)
                         : new ChaCha20ParameterSpec(iv, 0);
@@ -68,7 +72,6 @@ public class ChaCha20Benchmarks {
         abstract int opmode();
     }
 
-    @State(Scope.Benchmark)
     public static class ChaCha20Enc extends ChaCha20 {
 
         int opmode() {
@@ -76,7 +79,6 @@ public class ChaCha20Benchmarks {
         }
     }
 
-    @State(Scope.Benchmark)
     public static class ChaCha20Dec extends ChaCha20 {
 
         byte[] ciphertext;
