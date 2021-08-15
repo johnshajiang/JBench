@@ -64,15 +64,15 @@ public class BenchmarkExecutor {
     }
 
     public static void main(String[] args) throws RunnerException {
-        BenchmarkExecutor executor = new BenchmarkExecutor();
         if (args != null && args.length > 0) {
-            executor.execute(args[0], filename(BenchmarkExecutor.class));
+            new BenchmarkExecutor().execute(args[0],
+                    filename(BenchmarkExecutor.class));
         } else {
-            executor.execute(AesBenchmarks.class);
-            executor.execute(ChaCha20Benchmarks.class);
-            executor.execute(DigestBenchmarks.class);
-            executor.execute(KeyPairGenBenchmarks.class);
-            executor.execute(MacBenchmarks.class);
+            new BenchmarkExecutor().execute(AesBenchmarks.class);
+            new BenchmarkExecutor().execute(ChaCha20Benchmarks.class);
+            new BenchmarkExecutor().execute(DigestBenchmarks.class);
+            new BenchmarkExecutor().execute(KeyPairGenBenchmarks.class);
+            new BenchmarkExecutor().execute(MacBenchmarks.class);
         }
     }
 
