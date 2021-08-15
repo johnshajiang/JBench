@@ -12,6 +12,7 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.Security;
 import java.security.spec.ECGenParameterSpec;
+import java.security.spec.RSAKeyGenParameterSpec;
 
 /**
  * The benchmarks for key pair generator.
@@ -28,7 +29,7 @@ public class KeyPairGenBenchmarks {
         @Param({"JDK", "BC"})
         String provider;
 
-        @Param({"DiffieHellman", "EC", "EdDSA", "RSA", "RSASSA-PSS"})
+        @Param({"DH", "EC", "EdDSA", "RSA", "RSASSA-PSS"})
         String algorithm;
 
         KeyPairGenerator self;
@@ -41,7 +42,7 @@ public class KeyPairGenBenchmarks {
 
         private String provider() {
             if ("JDK".equals(provider)) {
-                if ("DiffieHellman".equals(algorithm)) {
+                if ("DH".equals(algorithm)) {
                     return "SunJCE";
                 } else if("EC".equals(algorithm) || "EdDSA".equals(algorithm)) {
                     return "SunEC";
@@ -65,10 +66,12 @@ public class KeyPairGenBenchmarks {
         }
 
         private void initJDK(KeyPairGenerator keyPairGen) throws Exception {
-            if ("DiffieHellman".equals(algorithm)
-                    || "RSA".equals(algorithm)
-                    || "RSASSA-PSS".equals(algorithm)) {
+            if ("DH".equals(algorithm)) {
                 keyPairGen.initialize(2048);
+            } else if ("RSA".equals(algorithm)
+                    || "RSASSA-PSS".equals(algorithm)) {
+                keyPairGen.initialize(new RSAKeyGenParameterSpec(
+                        2048, RSAKeyGenParameterSpec.F4));
             } else if ("EC".equals(algorithm)) {
                 keyPairGen.initialize(new ECGenParameterSpec("SECP256R1"));
             } else if ("EdDSA".equals(algorithm)) {
