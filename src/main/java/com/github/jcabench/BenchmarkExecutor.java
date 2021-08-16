@@ -71,8 +71,10 @@ public class BenchmarkExecutor {
             new BenchmarkExecutor().execute(AesBenchmarks.class);
             new BenchmarkExecutor().execute(ChaCha20Benchmarks.class);
             new BenchmarkExecutor().execute(DigestBenchmarks.class);
+            new BenchmarkExecutor().execute(KeyExBenchmarks.class);
             new BenchmarkExecutor().execute(KeyPairGenBenchmarks.class);
             new BenchmarkExecutor().execute(MacBenchmarks.class);
+            new BenchmarkExecutor().execute(SignatureBenchmarks.class);
         }
     }
 
