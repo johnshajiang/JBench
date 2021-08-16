@@ -25,10 +25,10 @@ public class AesBenchmarks {
     }
 
     @State(Scope.Benchmark)
-    public abstract static class Aes {
+    public abstract static class CipherProvider {
 
         @Param({"JDK", "BC"})
-        String provider;
+        String product;
 
         @Param({"AES/CBC/NoPadding",
                 "AES/CBC/PKCS5Padding",
@@ -38,15 +38,21 @@ public class AesBenchmarks {
                 "AES/GCM/NoPadding"})
         String transformation;
 
+        String provider;
         Cipher cipher;
 
         @Setup(Level.Trial)
         public void setup() throws Exception {
+            provider = provider();
             cipher = cipher(opmode());
         }
 
+        private String provider() {
+            return "JDK".equalsIgnoreCase(product) ? "SunJCE" : product;
+        }
+
         Cipher cipher(int opmode) throws Exception {
-            Cipher cipher = Cipher.getInstance(transformation, provider());
+            Cipher cipher = Cipher.getInstance(transformation, provider);
 
             AlgorithmParameterSpec paramSpec = paramSpec();
             if (paramSpec == null) {
@@ -59,10 +65,6 @@ public class AesBenchmarks {
         }
 
         abstract int opmode();
-
-        private String provider() {
-            return "JDK".equalsIgnoreCase(provider) ? "SunJCE" : provider;
-        }
 
         private AlgorithmParameterSpec paramSpec() {
             if (transformation.contains("CBC") || transformation.contains("CTR")) {
@@ -79,14 +81,14 @@ public class AesBenchmarks {
         }
     }
 
-    public static class AesEnc extends Aes {
+    public static class Encrypter extends CipherProvider {
 
         int opmode() {
             return Cipher.ENCRYPT_MODE;
         }
     }
 
-    public static class AesDec extends Aes {
+    public static class Decrypter extends CipherProvider {
 
         byte[] ciphertext;
 
@@ -103,18 +105,18 @@ public class AesBenchmarks {
     }
 
     @Benchmark
-    public byte[] encrypt(AesEnc aes) throws Exception {
+    public byte[] encrypt(Encrypter encrypter) throws Exception {
         // GCM requires either IV or Key must NOT be reused.
-        if (aes.transformation.contains("GCM")) {
-            aes.cipher.init(Cipher.ENCRYPT_MODE, BenchmarkUtils.AES_KEY_16,
+        if (encrypter.transformation.contains("GCM")) {
+            encrypter.cipher.init(Cipher.ENCRYPT_MODE, BenchmarkUtils.AES_KEY_16,
                     new GCMParameterSpec(128, BenchmarkUtils.randomBytes(16)));
         }
-        return aes.cipher.doFinal(MESSAGE);
+        return encrypter.cipher.doFinal(MESSAGE);
     }
 
     @Benchmark
-    public byte[] decrypt(AesDec aes) throws Exception {
-        return aes.cipher.doFinal(aes.ciphertext);
+    public byte[] decrypt(Decrypter decrypter) throws Exception {
+        return decrypter.cipher.doFinal(decrypter.ciphertext);
     }
 
     public static void main(String[] args) throws Exception {

@@ -24,29 +24,31 @@ public class KeyPairGenBenchmarks {
     }
 
     @State(Scope.Benchmark)
-    public static class KeyPairGen {
+    public static class KeyPairGenProvider {
 
         @Param({"JDK", "BC"})
-        String provider;
+        String product;
 
         @Param({"DH", "EC", "EdDSA", "RSA", "RSASSA-PSS"})
         String algorithm;
 
-        KeyPairGenerator self;
+        String provider;
+        KeyPairGenerator keyPairGen;
 
         @Setup(Level.Trial)
         public void setup() throws Exception {
-            self  = KeyPairGenerator.getInstance(algorithm, provider());
-            init(self);
+            provider = provider();
+            keyPairGen = KeyPairGenerator.getInstance(algorithm, provider);
+            init();
         }
 
         private String provider() {
-            if ("JDK".equals(provider)) {
-                if ("DH".equals(algorithm)) {
+            if (product.equals("JDK")) {
+                if (algorithm.equals("DH")) {
                     return "SunJCE";
-                } else if("EC".equals(algorithm) || "EdDSA".equals(algorithm)) {
+                } else if(algorithm.equals("EC") || algorithm.equals("EdDSA")) {
                     return "SunEC";
-                }  else if("RSA".equals(algorithm) || "RSASSA-PSS".equals(algorithm)) {
+                }  else if(algorithm.contains("RSA")) {
                     return "SunRsaSign";
                 } else {
                     throw new IllegalArgumentException(
@@ -54,28 +56,27 @@ public class KeyPairGenBenchmarks {
                 }
             }
 
-            return provider;
+            return product;
         }
 
-        private void init(KeyPairGenerator keyPairGen) throws Exception {
-            if ("JDK".equals(provider)) {
+        private void init() throws Exception {
+            if (product.equals("JDK")) {
                 initJDK(keyPairGen);
-            } else if ("BC".equals(provider)) {
+            } else if (product.equals("EB")) {
                 initBC(keyPairGen);
             }
         }
 
         private void initJDK(KeyPairGenerator keyPairGen) throws Exception {
-            if ("DH".equals(algorithm)) {
+            if (algorithm.equals("DH")) {
                 keyPairGen.initialize(2048);
-            } else if ("RSA".equals(algorithm)
-                    || "RSASSA-PSS".equals(algorithm)) {
+            } else if (algorithm.equals("EC")) {
+                keyPairGen.initialize(new ECGenParameterSpec("SECP256R1"));
+            } else if (algorithm.equals("EdDSA")) {
+                keyPairGen.initialize(new ECGenParameterSpec("Ed25519"));
+            } else if (algorithm.contains("RSA")) {
                 keyPairGen.initialize(new RSAKeyGenParameterSpec(
                         2048, RSAKeyGenParameterSpec.F4));
-            } else if ("EC".equals(algorithm)) {
-                keyPairGen.initialize(new ECGenParameterSpec("SECP256R1"));
-            } else if ("EdDSA".equals(algorithm)) {
-                keyPairGen.initialize(new ECGenParameterSpec("Ed25519"));
             }
         }
 
@@ -85,8 +86,8 @@ public class KeyPairGenBenchmarks {
     }
 
     @Benchmark
-    public KeyPair keyPairGen(KeyPairGen keyPairGen) {
-        return keyPairGen.self.generateKeyPair();
+    public KeyPair keyPairGen(KeyPairGenProvider provider) {
+        return provider.keyPairGen.generateKeyPair();
     }
 
     public static void main(String[] args) throws Exception {

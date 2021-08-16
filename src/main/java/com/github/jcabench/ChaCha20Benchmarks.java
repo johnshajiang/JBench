@@ -27,21 +27,27 @@ public class ChaCha20Benchmarks {
     }
 
     @State(Scope.Benchmark)
-    public abstract static class ChaCha20 {
+    public abstract static class CipherProvider {
 
         @Param({"JDK", "BC"})
-        String provider;
+        String product;
 
         @Param({"ChaCha20", "ChaCha20-Poly1305"})
         String algorithm;
 
+        String provider;
         Cipher cipher;
 
         byte[] iv;
 
         @Setup(Level.Invocation)
         public void setup() throws Exception {
+            provider = provider();
             cipher = cipher(opmode());
+        }
+
+        private String provider() {
+            return "JDK".equalsIgnoreCase(product) ? "SunJCE" : product;
         }
 
         Cipher cipher(int opmode) throws Exception {
@@ -49,18 +55,14 @@ public class ChaCha20Benchmarks {
                 iv = BenchmarkUtils.randomBytes(12);
             }
 
-            Cipher cipher = Cipher.getInstance(algorithm, provider());
+            Cipher cipher = Cipher.getInstance(algorithm, provider);
             cipher.init(opmode, BenchmarkUtils.AES_KEY_32, paramSpec());
 
             return cipher;
         }
 
-        private String provider() {
-            return "JDK".equalsIgnoreCase(provider) ? "SunJCE" : provider;
-        }
-
         private AlgorithmParameterSpec paramSpec() {
-            if ("JDK".equals(provider)) {
+            if ("JDK".equals(product)) {
                 return "ChaCha20-Poly1305".equals(algorithm)
                         ? new IvParameterSpec(iv)
                         : new ChaCha20ParameterSpec(iv, 0);
@@ -72,14 +74,14 @@ public class ChaCha20Benchmarks {
         abstract int opmode();
     }
 
-    public static class ChaCha20Enc extends ChaCha20 {
+    public static class Encrypter extends CipherProvider {
 
         int opmode() {
             return Cipher.ENCRYPT_MODE;
         }
     }
 
-    public static class ChaCha20Dec extends ChaCha20 {
+    public static class Decrypter extends CipherProvider {
 
         byte[] ciphertext;
 
@@ -96,13 +98,13 @@ public class ChaCha20Benchmarks {
     }
 
     @Benchmark
-    public byte[] encrypt(ChaCha20Enc chacha20) throws Exception {
-        return chacha20.cipher.doFinal(MESSAGE);
+    public byte[] encrypt(Encrypter encrypter) throws Exception {
+        return encrypter.cipher.doFinal(MESSAGE);
     }
 
     @Benchmark
-    public byte[] decrypt(ChaCha20Dec chacha20) throws Exception {
-        return chacha20.cipher.doFinal(chacha20.ciphertext);
+    public byte[] decrypt(Decrypter decrypter) throws Exception {
+        return decrypter.cipher.doFinal(decrypter.ciphertext);
     }
 
     public static void main(String[] args) throws Exception {

@@ -23,30 +23,32 @@ public class DigestBenchmarks {
     }
 
     @State(Scope.Benchmark)
-    public static class MD {
+    public static class DigestProvider {
 
         @Param({"JDK", "BC"})
-        String provider;
+        String product;
 
         @Param({"SHA-1", "SHA-224", "SHA-256", "SHA-384", "SHA-512/224",
                 "SHA-512/256", "SHA3-224", "SHA3-256", "SHA3-384", "SHA3-512"})
         String algorithm;
 
-        MessageDigest self;
+        String provider;
+        MessageDigest messageDigest;
 
         @Setup(Level.Trial)
         public void setup() throws Exception {
-            self = MessageDigest.getInstance(algorithm, provider());
+            provider = provider();
+            messageDigest = MessageDigest.getInstance(algorithm, provider);
         }
 
         private String provider() {
-            return "JDK".equalsIgnoreCase(provider) ? "SUN" : provider;
+            return "JDK".equalsIgnoreCase(product) ? "SUN" : product;
         }
     }
 
     @Benchmark
-    public byte[] digest(MD md) {
-        return md.self.digest(MESSAGE);
+    public byte[] digest(DigestProvider provider) {
+        return provider.messageDigest.digest(MESSAGE);
     }
 
     public static void main(String[] args) throws Exception {

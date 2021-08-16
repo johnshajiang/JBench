@@ -30,7 +30,7 @@ public class SignatureBenchmarks {
     }
 
     @State(Scope.Benchmark)
-    public abstract static class Sig {
+    public abstract static class SignatureProvider {
 
         @Param({"JDK", "BC"})
         String product;
@@ -40,22 +40,20 @@ public class SignatureBenchmarks {
         String algorithm;
 
         String provider;
-
         KeyPair keyPair;
-
-        Signature self;
+        Signature signature;
 
         @Setup(Level.Trial)
         public void setup() throws Exception {
             provider = provider();
             keyPair = keyPair();
-            self  = Signature.getInstance(algorithm, provider);
+            signature = Signature.getInstance(algorithm, provider);
             initSignature();
         }
 
         void initSignature() throws Exception {
             if (algorithm.equals("RSASSA-PSS")) {
-                self.setParameter(
+                signature.setParameter(
                         new PSSParameterSpec("SHA-256", "MGF1",
                                 MGF1ParameterSpec.SHA256, 20,
                                 PSSParameterSpec.TRAILER_FIELD_BC));
@@ -63,7 +61,7 @@ public class SignatureBenchmarks {
         }
 
         private String provider() {
-            if ("JDK".equals(product)) {
+            if (product.equals("JDK")) {
                 if(algorithm.contains("DSA")) {
                     return "SunEC";
                 }  else if(algorithm.contains("RSA")) {
@@ -81,9 +79,9 @@ public class SignatureBenchmarks {
             KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(
                     keyPairGenAlgo(), provider);
 
-            if ("JDK".equals(product)) {
+            if (product.equals("JDK")) {
                 initKePairJDK(keyPairGen);
-            } else if ("BC".equals(product)) {
+            } else if (product.equals("BC")) {
                 initKeyPairBC(keyPairGen);
             }
 
@@ -116,41 +114,41 @@ public class SignatureBenchmarks {
         }
     }
 
-    public static class Signer extends Sig {
+    public static class Signer extends SignatureProvider {
 
         @Override
         void initSignature() throws Exception {
             super.initSignature();
-            self.initSign(keyPair.getPrivate());
+            signature.initSign(keyPair.getPrivate());
         }
     }
 
-    public static class Verifier extends Sig {
+    public static class Verifier extends SignatureProvider {
 
-        byte[] signature;
+        byte[] sig;
 
         @Override
         void initSignature() throws Exception {
             super.initSignature();
 
-            self.initSign(keyPair.getPrivate());
-            self.update(MESSAGE, 0, MESSAGE.length);
-            signature = self.sign();
+            signature.initSign(keyPair.getPrivate());
+            signature.update(MESSAGE, 0, MESSAGE.length);
+            sig = signature.sign();
 
-            self.initVerify(keyPair.getPublic());
+            signature.initVerify(keyPair.getPublic());
         }
     }
 
     @Benchmark
     public byte[] sign(Signer signer) throws SignatureException {
-        signer.self.update(MESSAGE, 0, MESSAGE.length);
-        return signer.self.sign();
+        signer.signature.update(MESSAGE, 0, MESSAGE.length);
+        return signer.signature.sign();
     }
 
     @Benchmark
     public boolean verify(Verifier verifier) throws SignatureException {
-        verifier.self.update(MESSAGE, 0, MESSAGE.length);
-        return verifier.self.verify(verifier.signature);
+        verifier.signature.update(MESSAGE, 0, MESSAGE.length);
+        return verifier.signature.verify(verifier.sig);
     }
 
     public static void main(String[] args) throws Exception {

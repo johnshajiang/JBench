@@ -24,7 +24,7 @@ public class MacBenchmarks {
     }
 
     @State(Scope.Benchmark)
-    public static class MAC {
+    public static class MacProvider {
 
         @Param({"JDK", "BC"})
         String provider;
@@ -34,23 +34,23 @@ public class MacBenchmarks {
                 "HmacSHA3-256", "HmacSHA3-384", "HmacSHA3-512"})
         String algorithm;
 
-        Mac self;
+        Mac mac;
 
         @Setup(Level.Trial)
         public void setup() throws Exception {
-            self = Mac.getInstance(algorithm, provider());
+            mac = Mac.getInstance(algorithm, provider());
             SecretKeySpec key = new SecretKeySpec(BenchmarkUtils.KEY_16, "AES");
-            self.init(key);
+            mac.init(key);
         }
 
         private String provider() {
-            return "JDK".equalsIgnoreCase(provider) ? "SunJCE" : provider;
+            return provider.equalsIgnoreCase("JDK") ? "SunJCE" : provider;
         }
     }
 
     @Benchmark
-    public byte[] mac(MAC mac) {
-        return mac.self.doFinal(MESSAGE);
+    public byte[] mac(MacProvider provider) {
+        return provider.mac.doFinal(MESSAGE);
     }
 
     public static void main(String[] args) throws Exception {

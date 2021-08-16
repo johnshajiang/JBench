@@ -27,68 +27,58 @@ public class KeyExBenchmarks {
     }
 
     @State(Scope.Benchmark)
-    public static class KeyEx {
+    public static class KeyExProvider {
 
         @Param({"JDK", "BC"})
-        String provider;
+        String product;
 
         @Param({"DH", "ECDH", "XDH"})
         String algorithm;
 
+        String provider;
         KeyPair keyPair;
-
-        KeyAgreement self;
+        KeyAgreement keyEx;
 
         @Setup(Level.Trial)
         public void setup() throws Exception {
+            provider = provider();
             keyPair = keyPair();
-            self = KeyAgreement.getInstance(algorithm, provider());
+            keyEx = KeyAgreement.getInstance(algorithm, provider);
         }
 
         private String provider() {
-            if ("JDK".equals(provider)) {
-                if ("DH".equals(algorithm)) {
+            if (product.equals("JDK")) {
+                if (algorithm.equals("DH")) {
                     return "SunJCE";
                 } else {
                     return "SunEC";
                 }
             }
 
-            return provider;
+            return product;
         }
 
         private KeyPair keyPair() throws Exception {
             String algorithm = keyAlgorithm();
 
             KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(algorithm);
-            switch (algorithm) {
-                case "DH":
-                    keyPairGen.initialize(2048);
-                    break;
-                case "RSA":
-                case "RSASSA-PSS":
-                    keyPairGen.initialize(new RSAKeyGenParameterSpec(
-                            2048, RSAKeyGenParameterSpec.F4));
-                    break;
-                case "EC":
-                    keyPairGen.initialize(new ECGenParameterSpec("SECP256R1"));
-                    break;
-                case "XDH":
-                    keyPairGen.initialize(new NamedParameterSpec("X25519"));
-                    break;
-                case "EdDSA":
-                    keyPairGen.initialize(new ECGenParameterSpec("Ed25519"));
-                    break;
-                default:
-                    throw new IllegalArgumentException(
-                            "Unsupported algorithm: " + algorithm);
+
+            if(algorithm.equals("DH")) {
+                keyPairGen.initialize(2048);
+            } else if(algorithm.equals("EC")) {
+                keyPairGen.initialize(new ECGenParameterSpec("SECP256R1"));
+            } else if(algorithm.equals("XDH")) {
+                keyPairGen.initialize(new NamedParameterSpec("X25519"));
+            } else {
+                throw new IllegalArgumentException(
+                        "Unsupported key algorithm: " + algorithm);
             }
 
             return keyPairGen.generateKeyPair();
         }
 
         private String keyAlgorithm() {
-            if ("ECDH".equals(algorithm)) {
+            if (algorithm.equals("ECDH")) {
                 return "EC";
             }
 
@@ -97,10 +87,10 @@ public class KeyExBenchmarks {
     }
 
     @Benchmark
-    public byte[] keyEx(KeyEx keyEx) throws Exception {
-        keyEx.self.init(keyEx.keyPair.getPrivate());
-        keyEx.self.doPhase(keyEx.keyPair.getPublic(), true);
-        return keyEx.self.generateSecret();
+    public byte[] keyEx(KeyExProvider provider) throws Exception {
+        provider.keyEx.init(provider.keyPair.getPrivate());
+        provider.keyEx.doPhase(provider.keyPair.getPublic(), true);
+        return provider.keyEx.generateSecret();
     }
 
     public static void main(String[] args) throws RunnerException {
