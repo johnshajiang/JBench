@@ -62,7 +62,7 @@ public class KeyPairGenBenchmarks {
         private void init() throws Exception {
             if (product.equals("JDK")) {
                 initJDK(keyPairGen);
-            } else if (product.equals("EB")) {
+            } else if (product.equals("BC")) {
                 initBC(keyPairGen);
             }
         }
