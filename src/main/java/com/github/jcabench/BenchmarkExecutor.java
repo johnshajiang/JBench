@@ -68,8 +68,7 @@ public class BenchmarkExecutor {
             new BenchmarkExecutor().execute(args[0],
                     filename(BenchmarkExecutor.class));
         } else {
-            new BenchmarkExecutor().execute(AesBenchmarks.class);
-            new BenchmarkExecutor().execute(ChaCha20Benchmarks.class);
+            new BenchmarkExecutor().execute(CipherBenchmarks.class);
             new BenchmarkExecutor().execute(DigestBenchmarks.class);
             new BenchmarkExecutor().execute(KeyExBenchmarks.class);
             new BenchmarkExecutor().execute(KeyPairGenBenchmarks.class);

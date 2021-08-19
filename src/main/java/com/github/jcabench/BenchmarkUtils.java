@@ -1,8 +1,6 @@
 package com.github.jcabench;
 
 import javax.crypto.SecretKey;
-import javax.crypto.spec.GCMParameterSpec;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
@@ -24,9 +22,6 @@ public class BenchmarkUtils {
 
     public static final SecretKey AES_KEY_16 = new SecretKeySpec(KEY_16, "AES");
     public static final SecretKey AES_KEY_32 = new SecretKeySpec(KEY_32, "AES");
-    public static final IvParameterSpec IV_PARAM_16 = new IvParameterSpec(IV_16);
-    public static final GCMParameterSpec GCM_PARAM_16
-            = new GCMParameterSpec(128, IV_16);
 
     private static final SecureRandom RANDOM = new SecureRandom();
 
