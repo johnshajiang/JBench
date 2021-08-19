@@ -41,7 +41,7 @@ public class CipherBenchmarks {
                 "AES/ECB/PKCS5Padding",
                 "AES/GCM/NoPadding",
                 "ChaCha20",
-                "ChaCah20-Poly1305"})
+                "ChaCha20-Poly1305"})
         String transformation;
 
         byte[] iv;
