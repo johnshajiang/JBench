@@ -15,7 +15,6 @@ import java.security.KeyPairGenerator;
 import java.security.Security;
 import java.security.spec.ECGenParameterSpec;
 import java.security.spec.NamedParameterSpec;
-import java.security.spec.RSAKeyGenParameterSpec;
 
 /**
  * The benchmarks for key exchange algorithms.
