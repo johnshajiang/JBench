@@ -1,5 +1,6 @@
-package com.github.jcabench;
+package com.github.jbench.security.crypto;
 
+import com.github.jbench.BenchmarkExecutor;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.openjdk.jmh.annotations.Benchmark;
 import org.openjdk.jmh.annotations.Level;

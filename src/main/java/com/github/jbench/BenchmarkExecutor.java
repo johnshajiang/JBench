@@ -1,5 +1,11 @@
-package com.github.jcabench;
+package com.github.jbench;
 
+import com.github.jbench.security.crypto.CipherBenchmarks;
+import com.github.jbench.security.crypto.DigestBenchmarks;
+import com.github.jbench.security.crypto.KeyExBenchmarks;
+import com.github.jbench.security.crypto.KeyPairGenBenchmarks;
+import com.github.jbench.security.crypto.MacBenchmarks;
+import com.github.jbench.security.crypto.SignatureBenchmarks;
 import org.openjdk.jmh.annotations.Mode;
 import org.openjdk.jmh.results.RunResult;
 import org.openjdk.jmh.results.format.ResultFormatType;
@@ -15,7 +21,7 @@ import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
-import static com.github.jcabench.BenchmarkUtils.formattedTime;
+import static com.github.jbench.security.crypto.BenchmarkUtils.formattedTime;
 
 /**
  * Execute the specified benchmark(s).
@@ -83,7 +89,7 @@ public class BenchmarkExecutor {
 
     // A workaround for executing JMH via Maven.
     // The command looks like the below:
-    // mvn exec:java -Dexec.mainClass=com.github.jcabench.BenchmarkExecutor -Dexec.args=<regex>
+    // mvn exec:java -Dexec.mainClass=com.github.jbench.security.crypto.BenchmarkExecutor -Dexec.args=<regex>
     private static void setJavaClasspath() {
         URLClassLoader classLoader
                 = (URLClassLoader) BenchmarkExecutor.class.getClassLoader();
