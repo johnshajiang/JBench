@@ -1,4 +1,4 @@
-package com.github.jbench.security.crypto;
+package com.github.jbench;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;

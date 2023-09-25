@@ -21,7 +21,7 @@ import java.net.URLClassLoader;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
-import static com.github.jbench.security.crypto.BenchmarkUtils.formattedTime;
+import static com.github.jbench.BenchmarkUtils.formattedTime;
 
 /**
  * Execute the specified benchmark(s).
