@@ -1,14 +1,20 @@
 package com.github.jbench.security.crypto;
 
-import com.github.jbench.BenchmarkExecutor;
 import com.github.jbench.BenchmarkUtils;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.BenchmarkMode;
+import org.openjdk.jmh.annotations.Fork;
 import org.openjdk.jmh.annotations.Level;
+import org.openjdk.jmh.annotations.Measurement;
+import org.openjdk.jmh.annotations.Mode;
+import org.openjdk.jmh.annotations.OutputTimeUnit;
 import org.openjdk.jmh.annotations.Param;
 import org.openjdk.jmh.annotations.Scope;
 import org.openjdk.jmh.annotations.Setup;
 import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Threads;
+import org.openjdk.jmh.annotations.Warmup;
 
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -19,10 +25,17 @@ import java.security.spec.ECGenParameterSpec;
 import java.security.spec.MGF1ParameterSpec;
 import java.security.spec.PSSParameterSpec;
 import java.security.spec.RSAKeyGenParameterSpec;
+import java.util.concurrent.TimeUnit;
 
 /**
  * The benchmarks for signature algorithms.
  */
+@Warmup(iterations = 5, time = 5)
+@Measurement(iterations = 5, time = 10)
+@Fork(value = 2, jvmArgsAppend = {"-server", "-Xms2048M", "-Xmx2048M", "-XX:+UseG1GC"})
+@Threads(1)
+@BenchmarkMode(Mode.Throughput)
+@OutputTimeUnit(TimeUnit.SECONDS)
 public class SignatureBenchmarks {
 
     private final static byte[] MESSAGE = BenchmarkUtils.DATA_1MB;
@@ -151,9 +164,5 @@ public class SignatureBenchmarks {
     public boolean verify(Verifier verifier) throws SignatureException {
         verifier.signature.update(MESSAGE, 0, MESSAGE.length);
         return verifier.signature.verify(verifier.sig);
-    }
-
-    public static void main(String[] args) throws Exception {
-        new BenchmarkExecutor().execute(SignatureBenchmarks.class);
     }
 }

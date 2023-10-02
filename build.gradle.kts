@@ -18,7 +18,6 @@ dependencies {
 
     implementation("org.openjdk.jmh:jmh-core:${jmhVersion}")
     implementation("org.openjdk.jmh:jmh-generator-annprocess:${jmhVersion}")
-    implementation("org.openjdk.jmh:jmh-generator-annprocess:${jmhVersion}")
 
     // Used by IDE
     annotationProcessor("org.openjdk.jmh:jmh-generator-annprocess:${jmhVersion}")
