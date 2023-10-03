@@ -49,7 +49,9 @@ var uberJar = task("uberJar", type = Jar::class) {
                 zipTree(it)
             }
         } + sourceSets.main.get().output
-    from(contents)
+    from(contents) {
+        exclude("META-INF/*.SF", "META-INF/*.RSA", "META-INF/*.DSA")
+    }
 
     dependsOn(":compileJava", ":processResources")
 }
