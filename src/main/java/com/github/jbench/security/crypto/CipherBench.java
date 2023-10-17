@@ -35,7 +35,7 @@ import java.util.concurrent.TimeUnit;
 @Threads(1)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class CipherBenchmarks {
+public class CipherBench {
 
     private final static byte[] MESSAGE = BenchmarkUtils.DATA_1MB;
 

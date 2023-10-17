@@ -36,7 +36,7 @@ import java.util.concurrent.TimeUnit;
 @Threads(1)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class SignatureBenchmarks {
+public class SignatureBench {
 
     private final static byte[] MESSAGE = BenchmarkUtils.DATA_1MB;
 

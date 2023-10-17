@@ -15,15 +15,16 @@ import org.openjdk.jmh.annotations.State;
 import org.openjdk.jmh.annotations.Threads;
 import org.openjdk.jmh.annotations.Warmup;
 
+import javax.crypto.KeyAgreement;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.Security;
 import java.security.spec.ECGenParameterSpec;
-import java.security.spec.RSAKeyGenParameterSpec;
+import java.security.spec.NamedParameterSpec;
 import java.util.concurrent.TimeUnit;
 
 /**
- * The benchmarks for key pair generator.
+ * The benchmarks for key exchange algorithms.
  */
 @Warmup(iterations = 5, time = 5)
 @Measurement(iterations = 5, time = 10)
@@ -31,76 +32,76 @@ import java.util.concurrent.TimeUnit;
 @Threads(1)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class KeyPairGenBenchmarks {
+public class KeyExBench {
 
     static {
         Security.addProvider(new BouncyCastleProvider());
     }
 
     @State(Scope.Benchmark)
-    public static class KeyPairGenProvider {
+    public static class KeyExProvider {
 
         @Param({"JDK", "BC"})
         String product;
 
-        @Param({"DH", "EC", "EdDSA", "RSA", "RSASSA-PSS"})
+        @Param({"DH", "ECDH", "XDH"})
         String algorithm;
 
         String provider;
-        KeyPairGenerator keyPairGen;
+        KeyPair keyPair;
+        KeyAgreement keyEx;
 
         @Setup(Level.Trial)
         public void setup() throws Exception {
             provider = provider();
-            keyPairGen = KeyPairGenerator.getInstance(algorithm, provider);
-            init();
+            keyPair = keyPair();
+            keyEx = KeyAgreement.getInstance(algorithm, provider);
         }
 
         private String provider() {
             if (product.equals("JDK")) {
                 if (algorithm.equals("DH")) {
                     return "SunJCE";
-                } else if(algorithm.equals("EC") || algorithm.equals("EdDSA")) {
-                    return "SunEC";
-                }  else if(algorithm.contains("RSA")) {
-                    return "SunRsaSign";
                 } else {
-                    throw new IllegalArgumentException(
-                            "Unsupported algorithm: " + algorithm);
+                    return "SunEC";
                 }
             }
 
             return product;
         }
 
-        private void init() throws Exception {
-            if (product.equals("JDK")) {
-                initJDK(keyPairGen);
-            } else if (product.equals("BC")) {
-                initBC(keyPairGen);
-            }
-        }
+        private KeyPair keyPair() throws Exception {
+            String algorithm = keyAlgorithm();
 
-        private void initJDK(KeyPairGenerator keyPairGen) throws Exception {
-            if (algorithm.equals("DH")) {
+            KeyPairGenerator keyPairGen = KeyPairGenerator.getInstance(algorithm);
+
+            if(algorithm.equals("DH")) {
                 keyPairGen.initialize(2048);
-            } else if (algorithm.equals("EC")) {
+            } else if(algorithm.equals("EC")) {
                 keyPairGen.initialize(new ECGenParameterSpec("SECP256R1"));
-            } else if (algorithm.equals("EdDSA")) {
-                keyPairGen.initialize(new ECGenParameterSpec("Ed25519"));
-            } else if (algorithm.contains("RSA")) {
-                keyPairGen.initialize(new RSAKeyGenParameterSpec(
-                        2048, RSAKeyGenParameterSpec.F4));
+            } else if(algorithm.equals("XDH")) {
+                keyPairGen.initialize(new NamedParameterSpec("X25519"));
+            } else {
+                throw new IllegalArgumentException(
+                        "Unsupported key algorithm: " + algorithm);
             }
+
+            return keyPairGen.generateKeyPair();
         }
 
-        private void initBC(KeyPairGenerator keyPairGen) throws Exception {
-            initJDK(keyPairGen);
+        private String keyAlgorithm() {
+            if (algorithm.equals("ECDH")) {
+                return "EC";
+            }
+
+            return algorithm;
         }
     }
 
     @Benchmark
-    public KeyPair keyPairGen(KeyPairGenProvider provider) {
-        return provider.keyPairGen.generateKeyPair();
+    public byte[] keyEx(KeyExProvider provider) throws Exception {
+        provider.keyEx.init(provider.keyPair.getPrivate());
+        provider.keyEx.doPhase(provider.keyPair.getPublic(), true);
+        return provider.keyEx.generateSecret();
     }
 }

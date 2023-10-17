@@ -30,7 +30,7 @@ import java.util.concurrent.TimeUnit;
 @Threads(1)
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-public class MacBenchmarks {
+public class MacBench {
 
     private final static byte[] MESSAGE = BenchmarkUtils.DATA_1MB;
 
